@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Etika Surat Akaun Generator</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 590px;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 28px;
+            text-align: center;
+            font-size: 28px;
+        }
+
+        .form-group {
+            display: grid;
+            grid-template-columns: 150px 1fr;
+            align-items: center;
+            gap: 13px;
+            margin-bottom: 17px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 10px;
+            grid-column: 1 / -1;
+        }
+
+        label {
+            color: #555;
+            font-weight: 600;
+            font-size: 15px;
+            text-align: left;
+            padding-right: 0;
+        }
+
+        input {
+            padding: 12px 18px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .date-surat-akuan-group {
+            display: flex;
+            gap: 13px;
+            align-items: center;
+            margin-bottom: 18px;
+        }
+
+        .date-surat-akuan-group input {
+            font-size: 15px;
+        }
+        
+        .date-surat-akuan-group button {
+            padding: 8px 16px;
+            font-size: 13px;
+            font-weight: 600;
+            background: #d7b624;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+
+        .btn1 {
+            width: 100%;
+            padding: 14px;
+            background-color: #219bc4;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .btn2 {
+            width: 100%;
+            padding: 14px;
+            background: #FF6B6B;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn1:hover,.btn2:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn1:active,.btn2:active {
+            transform: translateY(0);
+        }
+
+        .error {
+            color: #e74c3c;
+            font-size: 12px;
+            margin-top: 5px;
+            display: none;
+        }
+
+        footer {
+            width: 50%;
+            margin-top: 30px;  
+            padding: 10px;
+            border-radius: 15px;
+            background-color: white;
+            text-align: center;
+            font-size: 12px;
+            font-family: 'Fredoka', sans-serif;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Etika Surat Akuan Generator</h1>
+        <form id="letterForm">
+            <div class="form-group">
+                <label for="name">Customer Name</label>
+                <input type="text" id="name" name="name" required>
+                <div class="error" id="nameError">Please enter your name</div>
+            </div>
+
+            <div class="form-group">
+                <label for="dateIncident">Date of Incident</label>
+                <input type="date" id="dateIncident" name="dateIncident" required>
+                <div class="error" id="dateError">Please select a date</div>
+            </div>
+
+            <div class="form-group">
+                <label for="idNumber">IC Number</label>
+                <input type="text" id="idNumber" name="idNumber" required oninput="formatIC()">
+                <div class="error" id="idError">Please enter your IC number</div>
+            </div>
+
+            <div class="form-group">
+                <label for="plateNumber">Vehicle Plate No.</label>
+                <input type="text" id="plateNumber" name="plateNumber" required>
+                <div class="error" id="idError">Please enter your vehicle Plate Number</div>
+            </div>
+
+            <div class="date-surat-akuan-group">
+                <label for="dateDocs">Date (Surat Akuan)</label>
+                <input type="date" id="dateDocs" name="dateDocs" required>
+                <button type="button" id="todayDateBtn">Today</button>
+                <button type="button" id="yesterdayDateBtn">Yesterday</button>
+                <div class="error" id="idError">Please select a date</div>
+            </div>
+
+            <div class="button-group">
+                <button type="submit" class="btn1">Generate PDF</button>
+                <button type="reset" class="btn2">Clear</button>
+            </div>
+        </form>
+    </div>
+
+    <script>
+        const form = document.getElementById('letterForm');
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const start = performance.now();    //check performance
+
+            
+            const name = document.getElementById('name').value.trim();
+            const dateIncident = document.getElementById('dateIncident').value;
+            const idNumber = document.getElementById('idNumber').value.trim();
+            const plateNumber = document.getElementById('plateNumber').value.toUpperCase().trim();
+            const dateDocs = document.getElementById('dateDocs').value;
+
+            if (!name || !dateIncident || !idNumber || !plateNumber || !dateDocs ) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+
+            if (idNumber.length !== 14 ) {
+                alert('The IC seems to be incorrect. Please check the IC.');
+                return;
+            }
+
+            generatePDF(name, dateIncident, idNumber, plateNumber, dateDocs);
+            const end = performance.now();      //check performance
+            console.log(`Execution took ${end - start} ms`);    //check performance
+        });
+
+
+        const todayBtn = document.getElementById('todayDateBtn');
+        todayBtn.addEventListener('click', function(e) {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            document.getElementById('dateDocs').value = `${yyyy}-${mm}-${dd}`;//Correct format which can be accept by <input type="date"> element.
+        });
+
+        const ytdBtn = document.getElementById('yesterdayDateBtn');
+        ytdBtn.addEventListener('click', function(e) {
+            const yesterday = new Date();
+            yesterday.setDate(yesterday.getDate() - 1); // Subtract one day to get yesterday's date
+            const yyyy = yesterday.getFullYear();
+            const mm = String(yesterday.getMonth() + 1).padStart(2, '0');
+            const dd = String(yesterday.getDate()).padStart(2, '0');
+            document.getElementById('dateDocs').value = `${yyyy}-${mm}-${dd}`;//Correct format which can be accept by <input type="date"> element.
+        });
+
+
+
+        
+        function generatePDF(name, dateIncident, idNumber, plateNumber, dateDocs) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+
+            const pageWidth = doc.internal.pageSize.getWidth();
+            const margin = 20;
+            const contentWidth = pageWidth - (margin * 2);
+
+            doc.setFontSize(20);
+            doc.setFont(undefined, 'bold');
+            doc.text('SURAT AKUAN', pageWidth / 2, 30, { align: 'center' });
+
+            doc.setFontSize(10);
+            doc.setFont(undefined, 'normal');
+
+            const lineHeight = 7;
+            let yPosition = 60;
+
+            const bengkelName = "Lee Wind Screen Specialist Enterprise";
+
+            const namaPenuh = 'nama penuh'
+            const tarikhKMLG = 'tarikh kemalangan'
+            const namaBengkel = 'nama bengkel'
+
+
+            const formattedDate = formatingDate(dateIncident);
+            const paragraph = `Saya/Kami  ${name} (${namaPenuh}) pemegang Kad Pengenalan bernombor  ${idNumber}  dan pemilik kenderaan motor  ${plateNumber}  dengan ini mengesahkan bahawa cermin kenderaan saya/kami telah mengalami kerosakan pada ${formattedDate} ( tarikh kemalangan ). Saya/Kami juga mengaku bahawa tuntutan insurans saya/kami ini adalah benar dan kerosakan yang berlaku adakah di dalam tempoh perlindungan insurans/takaful. \n\nSaya/Kami telah mengesahkan telah mendapat penerangan tentang kebaikan dan kelebihan pembaikan cermin (windscreen repair) dari pihak bengkel,  ${bengkelName} ( ${namaBengkel} ).\n\nSekiranya tuntutan saya/kami ditolak oleh Etiqa, saya/kami memberi persetujuan dan komitmen untuk membuat pembayaran kos pembaikan/penggantian cermin kepada pihak bengkel,  ${bengkelName} ( ${namaBengkel} ) dalam masa tujuh (7) hari dari tarikh yang tertera di dalam surat akuan ini.\n\nSekian, terima kasih.`;
+
+            const lines = doc.splitTextToSize(paragraph, contentWidth);
+            
+            lines.forEach((line) => {
+                const underlineY = yPosition + 1;
+                let xPosition = margin;
+                
+                let remainingLine = line;
+                
+                // Check for name
+                if (remainingLine.includes(name)) {
+                    const nameIndex = remainingLine.indexOf(name);
+                    const beforeName = remainingLine.substring(0, nameIndex);
+                    const afterName = remainingLine.substring(nameIndex + name.length);
+                    
+                    // Print text before name
+                    doc.text(beforeName, xPosition, yPosition);
+                    xPosition += doc.getTextWidth(beforeName);
+                    
+                    // Print and underline name
+                    doc.setFont(undefined, 'bold');
+                    doc.text(name, xPosition, yPosition);
+                    doc.line(xPosition, underlineY, xPosition + doc.getTextWidth(name), underlineY);
+                    xPosition += doc.getTextWidth(name);
+                    doc.setFont(undefined, 'normal');
+                    
+                    remainingLine = afterName;
+                }
+
+                // Check for date
+                if (remainingLine.includes(formattedDate)) {
+                    const dateIndex = remainingLine.indexOf(formattedDate);
+                    const beforeDate = remainingLine.substring(0, dateIndex);
+                    const afterDate = remainingLine.substring(dateIndex + formattedDate.length);
+                    
+                    // Print text before date
+                    doc.text(beforeDate, xPosition, yPosition);
+                    xPosition += doc.getTextWidth(beforeDate);
+                    
+                    // Print and underline date
+                    doc.setFont(undefined, 'bold');
+                    doc.text(formattedDate, xPosition, yPosition);
+                    doc.line(xPosition, underlineY, xPosition + doc.getTextWidth(formattedDate), underlineY);
+                    xPosition += doc.getTextWidth(formattedDate);
+                    doc.setFont(undefined, 'normal');
+                    
+                    remainingLine = afterDate;
+                }
+                
+                // Check for ID number
+                if (remainingLine.includes(idNumber)) {
+                    const idIndex = remainingLine.indexOf(idNumber);
+                    const beforeId = remainingLine.substring(0, idIndex);
+                    const afterId = remainingLine.substring(idIndex + idNumber.length);
+                    
+                    // Print text before ID
+                    doc.text(beforeId, xPosition, yPosition);
+                    xPosition += doc.getTextWidth(beforeId);
+                    
+                    // Print and underline ID
+                    doc.setFont(undefined, 'bold');
+                    doc.text(idNumber, xPosition, yPosition);
+                    doc.line(xPosition, underlineY, xPosition + doc.getTextWidth(idNumber), underlineY);
+                    xPosition += doc.getTextWidth(idNumber);
+                    doc.setFont(undefined, 'normal');
+                    
+                    remainingLine = afterId;
+                }
+                
+                // Check for Vehicle Plate number
+                if (remainingLine.includes(plateNumber)) {
+                    const plateIndex = remainingLine.indexOf(plateNumber);
+                    const beforePlate = remainingLine.substring(0, plateIndex);
+                    const afterPlate = remainingLine.substring(plateIndex + plateNumber.length);
+                    
+                    // Print text before Plate Number
+                    doc.text(beforePlate, xPosition, yPosition);
+                    xPosition += doc.getTextWidth(beforePlate);
+                    
+                    // Print and underline Plate Number
+                    doc.setFont(undefined, 'bold');
+                    doc.text(plateNumber, xPosition, yPosition);
+                    doc.line(xPosition, underlineY, xPosition + doc.getTextWidth(plateNumber), underlineY);
+                    xPosition += doc.getTextWidth(plateNumber);
+                    doc.setFont(undefined, 'normal');
+                    
+                    remainingLine = afterPlate;
+                }
+
+                // Underline
+                if (remainingLine.includes(bengkelName)) {
+                    const bengkelNameIndex = remainingLine.indexOf(bengkelName);
+                    const before_bengkelName = remainingLine.substring(0, bengkelNameIndex);
+                    const after_bengkelName = remainingLine.substring(bengkelNameIndex + bengkelName.length);
+                    
+                    // Print text before Plate Number
+                    doc.text(before_bengkelName, xPosition, yPosition);
+                    xPosition += doc.getTextWidth(before_bengkelName);
+                    
+                    // Print and underline bengkel Name
+                    doc.setFont(undefined, 'normal');
+                    doc.text(bengkelName, xPosition, yPosition);
+                    doc.line(xPosition, underlineY, xPosition + doc.getTextWidth(bengkelName), underlineY);
+                    xPosition += doc.getTextWidth(bengkelName);
+                    doc.setFont(undefined, 'normal');
+                    
+                    remainingLine = after_bengkelName;
+                }
+
+
+                // Italic Word
+                if (remainingLine.includes(namaPenuh)) {
+                    const namaPenuhIndex = remainingLine.indexOf(namaPenuh);
+                    const beforeNamaPenuh = remainingLine.substring(0, namaPenuhIndex);  
+                    const afterNamaPenuh = remainingLine.substring(namaPenuhIndex + namaPenuh.length);
+
+                    // Print text before namaPenuh      //example like the space and the "("
+                    doc.text(beforeNamaPenuh, xPosition, yPosition);
+                    xPosition += doc.getTextWidth(beforeNamaPenuh);
+                   
+                    // Print italic name
+                    doc.setFont(undefined, 'italic');
+                    doc.text(namaPenuh, xPosition, yPosition);
+                    xPosition += doc.getTextWidth(namaPenuh);
+                    doc.setFont(undefined, 'normal');
+
+                    remainingLine = afterNamaPenuh;
+                }
+
+                // Italic Word
+                if (remainingLine.includes(tarikhKMLG)) {
+                    const tarikhKMLG_index = remainingLine.indexOf(tarikhKMLG);
+                    const before_tarikhKMLG = remainingLine.substring(0, tarikhKMLG_index);  
+                    const after_tarikhKMLG = remainingLine.substring(tarikhKMLG_index + tarikhKMLG.length);
+
+                    // Print text before tarikh Kemalangan
+                    doc.text(before_tarikhKMLG, xPosition, yPosition);
+                    xPosition += doc.getTextWidth(before_tarikhKMLG);
+                   
+                    // Print italic name
+                    doc.setFont(undefined, 'italic');
+                    doc.text(tarikhKMLG, xPosition, yPosition);
+                    xPosition += doc.getTextWidth(tarikhKMLG);
+                    doc.setFont(undefined, 'normal');
+
+                    remainingLine = after_tarikhKMLG;
+                }
+
+                // Italic Word
+                if (remainingLine.includes(namaBengkel)) {
+                    const namaBengkel_index = remainingLine.indexOf(namaBengkel);
+                    const before_namaBengkel = remainingLine.substring(0, namaBengkel_index);  
+                    const after_namaBengkel = remainingLine.substring(namaBengkel_index + namaBengkel.length);
+
+                    // Print text before tarikh Kemalangan
+                    doc.text(before_namaBengkel, xPosition, yPosition);
+                    xPosition += doc.getTextWidth(before_namaBengkel);
+                   
+                    // Print italic name
+                    doc.setFont(undefined, 'italic');
+                    doc.text(namaBengkel, xPosition, yPosition);
+                    xPosition += doc.getTextWidth(namaBengkel);
+                    doc.setFont(undefined, 'normal');
+
+                    remainingLine = after_namaBengkel;
+                }
+
+
+                // Print any remaining text
+                if (remainingLine) {
+                    doc.text(remainingLine, xPosition, yPosition);
+                }
+                
+                yPosition += lineHeight;
+            });
+
+            
+            // doc.text('Sekian, terima kasih.', margin, yPosition);
+            yPosition += 42;
+            doc.text('Yang benar,', margin, yPosition);
+            yPosition += 23;
+            doc.text('_______________________', margin, yPosition);
+            yPosition += 6;
+            doc.setFontSize(9.1);
+            doc.text('Nama: \t', margin, yPosition);
+            doc.text(name, margin+17, yPosition);
+            yPosition += 6;
+            doc.text('No. KP: \t', margin, yPosition);
+            doc.text(idNumber, margin+17, yPosition);
+            yPosition += 6;
+            doc.text('Tarikh: \t', margin, yPosition);
+            doc.text( formatingDate(dateDocs), margin+17, yPosition);
+
+            doc.save(plateNumber + ' SURAT AKUAN.pdf');
+        }
+
+        // function formatingDate(dateString) {
+        //     const date = new Date(dateString);
+        //     const options = { year: 'numeric', month: 'long', day: 'numeric' };
+        //     return date.toLocaleDateString('en-US', options);
+        // }
+        
+        function formatingDate(date) {
+            const parts = date.split('-');
+            return `${parts[2]}/${parts[1]}/${parts[0]}`;
+        }
+
+        function formatIC() {
+			var icField = document.getElementById("idNumber");
+			var value = icField.value.replace(/\D/g, '');  // Remove all non-digit characters
+
+			// Format to the pattern 123456-78-9012
+			if (value.length > 6) {
+				value = value.substring(0, 6) + '-' + value.substring(6);
+			}
+			if (value.length > 9) {
+				value = value.substring(0, 9) + '-' + value.substring(9);
+			}
+
+		icField.value = value.substring(0, 14);  // Limit to 14 characters (for the format)
+		}
+
+    </script>
+
+<footer>
+    <p>Prepared by Jing Xuan.</p>
+    <p>（Latest update: 23 Nov 2025）Need any customization? Feel free to contact me.</p>
+</footer>
+
+</body>
+</html>
