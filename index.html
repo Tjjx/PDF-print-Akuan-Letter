@@ -114,7 +114,6 @@
         .btn1 {
             flex: 1;
             padding: 14px;
-            background-color: #219bc4;
             color: white;
             border: none;
             border-radius: 8px;
@@ -123,7 +122,15 @@
             cursor: pointer;
             transition: transform 0.2s, box-shadow 0.2s;
         }
-        
+
+        #GeneratePDF {
+            background-color: #219bc4;
+        }
+
+        #PrintPDF {
+            background-color: #2ecafe;
+        }
+
         .btn2 {
             flex: 1;
             padding: 14px;
@@ -269,16 +276,16 @@
             </div>
 
             <div class="button-group">
-                <button type="submit" class="btn1">Generate PDF</button>
+                <button type="submit" class="btn1" id="GeneratePDF">Generate PDF</button>
+                <button type="submit" class="btn1" id="PrintPDF">Print PDF</button>
                 <button type="reset" class="btn2">Clear</button>
             </div>
         </form>
     </div>
 
     <script>
-        const form = document.getElementById('letterForm');
-
-        form.addEventListener('submit', function(e) {
+        const form_generate_PDF = document.getElementById('GeneratePDF');
+        form_generate_PDF.addEventListener('click', function(e) {
             e.preventDefault();
             const start = performance.now();    //check performance
 
@@ -300,11 +307,39 @@
                 return;
             }
 
-            generatePDF(name, dateIncident, idNumber, plateNumber, dateDocs);
+            generatePDF(name, dateIncident, idNumber, plateNumber, dateDocs, false);
             const end = performance.now();      //check performance
             console.log(`Execution took ${end - start} ms`);    //check performance
         });
 
+
+        const form_print_PDF = document.getElementById('PrintPDF');
+        form_print_PDF.addEventListener('click', function(e) {
+            e.preventDefault();
+            const start = performance.now();    //check performance
+
+            
+            const name = document.getElementById('name').value.trim();
+            const dateIncident = document.getElementById('dateIncident').value;
+            const idNumber = document.getElementById('idNumber').value.trim();
+            const plateNumber = document.getElementById('plateNumber').value.toUpperCase().trim();
+            const dateDocs = document.getElementById('dateDocs').value;
+
+            if (!name || !dateIncident || !idNumber || !plateNumber || !dateDocs ) {
+                alert('Please fill in all fields');
+                return;
+            }
+            
+
+            if (idNumber.length !== 14 ) {
+                alert('The IC seems to be incorrect. Please check the IC.');
+                return;
+            }
+
+            generatePDF(name, dateIncident, idNumber, plateNumber, dateDocs, true);
+            const end = performance.now();      //check performance
+            console.log(`Execution took ${end - start} ms`);    //check performance
+        });
 
         const todayBtn = document.getElementById('todayDateBtn');
         todayBtn.addEventListener('click', function(e) {
@@ -328,7 +363,7 @@
 
 
         
-        function generatePDF(name, dateIncident, idNumber, plateNumber, dateDocs) {
+        function generatePDF(name, dateIncident, idNumber, plateNumber, dateDocs, shouldPrint) {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
 
@@ -547,8 +582,14 @@
             yPosition += 6;
             doc.text('Tarikh: \t', margin, yPosition);
             doc.text( formatingDate(dateDocs), margin+17, yPosition);
+            
+            if (shouldPrint) {
+                doc.autoPrint();
+                window.open(doc.output('bloburl'), '_blank');
+            } else {
+                doc.save(plateNumber + ' SURAT AKUAN.pdf');
+            }
 
-            doc.save(plateNumber + ' SURAT AKUAN.pdf');
         }
 
         // function formatingDate(dateString) {
