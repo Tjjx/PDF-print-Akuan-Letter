@@ -23,7 +23,7 @@
             padding: 20px;
         }
 
-        .container {
+.container {
             background: white;
             border-radius: 15px;
             box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
@@ -42,17 +42,15 @@
         }
 
         .form-group {
-            display: grid;
-            grid-template-columns: 150px 1fr;
-            align-items: center;
-            gap: 13px;
+            display: flex;
+            flex-direction: column;
             margin-bottom: 17px;
         }
 
         .button-group {
             display: flex;
             gap: 10px;
-            grid-column: 1 / -1;
+            margin-top: 10px;
         }
 
         label {
@@ -60,7 +58,7 @@
             font-weight: 600;
             font-size: 15px;
             text-align: left;
-            padding-right: 0;
+            margin-bottom: 8px;
         }
 
         input {
@@ -69,6 +67,7 @@
             border-radius: 8px;
             font-size: 16px;
             transition: border-color 0.3s;
+            width: 100%;
         }
 
         input:focus {
@@ -78,28 +77,42 @@
 
         .date-surat-akuan-group {
             display: flex;
-            gap: 13px;
             align-items: center;
+            gap: 8px;
             margin-bottom: 18px;
+            flex-wrap: wrap;
+        }
+
+        .date-surat-akuan-group label {
+            color: #555;
+            font-weight: 600;
+            font-size: 14px;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .date-surat-akuan-group input {
-            font-size: 15px;
+            flex: 1;
+            min-width: 150px;
+            padding: 8px 12px;
+            font-size: 14px;
         }
         
         .date-surat-akuan-group button {
-            padding: 8px 16px;
-            font-size: 13px;
+            padding: 8px 12px;
+            font-size: 12px;
             font-weight: 600;
             background: #d7b624;
             color: white;
             border: none;
-            border-radius: 10px;
+            border-radius: 8px;
             cursor: pointer;
+            white-space: nowrap;
+            flex-shrink: 0;
         }
 
         .btn1 {
-            width: 100%;
+            flex: 1;
             padding: 14px;
             background-color: #219bc4;
             color: white;
@@ -112,7 +125,7 @@
         }
         
         .btn2 {
-            width: 100%;
+            flex: 1;
             padding: 14px;
             background: #FF6B6B;
             color: white;
@@ -141,7 +154,8 @@
         }
 
         footer {
-            width: 50%;
+            width: 90%;
+            max-width: 500px;
             margin-top: 30px;  
             padding: 10px;
             border-radius: 15px;
@@ -149,6 +163,72 @@
             text-align: center;
             font-size: 12px;
             font-family: 'Fredoka', sans-serif;
+        }
+
+        /* 平板和更大屏幕的响应式设计 */
+        @media (min-width: 768px) {
+            .container {
+                padding: 40px;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+
+            .form-group {
+                display: grid;
+                grid-template-columns: 150px 1fr;
+                align-items: center;
+                gap: 13px;
+            }
+
+            .form-group label {
+                margin-bottom: 0;
+            }
+
+            .date-surat-akuan-group {
+                gap: 10px;
+                flex-wrap: nowrap;
+            }
+
+            .date-surat-akuan-group label {
+                font-size: 15px;
+            }
+
+            .date-surat-akuan-group input {
+                padding: 10px 14px;
+                font-size: 15px;
+                min-width: 180px;
+            }
+
+            .date-surat-akuan-group button {
+                padding: 10px 16px;
+                font-size: 13px;
+            }
+
+            footer {
+                width: 50%;
+            }
+        }
+
+        /* 手机小屏幕优化 */
+        @media (max-width: 480px) {
+            .container {
+                padding: 25px;
+            }
+
+            h1 {
+                font-size: 22px;
+                margin-bottom: 20px;
+            }
+
+            .button-group {
+                flex-direction: column;
+            }
+
+            .btn1, .btn2 {
+                width: 100%;
+            }
         }
     </style>
 </head>
@@ -185,7 +265,7 @@
                 <input type="date" id="dateDocs" name="dateDocs" required>
                 <button type="button" id="todayDateBtn">Today</button>
                 <button type="button" id="yesterdayDateBtn">Yesterday</button>
-                <div class="error" id="idError">Please select a date</div>
+                <div class="error" id="dateDocsError">Please select a date</div>
             </div>
 
             <div class="button-group">
